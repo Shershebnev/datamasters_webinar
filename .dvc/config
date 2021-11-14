@@ -1,0 +1,7 @@
+[core]
+    remote = minio
+['remote "minio"']
+    url = s3://dvc-demo/
+    endpointurl = http://127.0.0.1:9000
+    access_key_id = admin
+    secret_access_key = password
