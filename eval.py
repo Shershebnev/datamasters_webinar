@@ -1,7 +1,9 @@
 import os
 from argparse import ArgumentParser
 
+import wandb
 from tensorflow.keras.models import load_model  # pylint: disable=E0611
+from wandb.keras import WandbCallback
 
 from config import AVAILABLE_MODELS
 from utils import get_dataset
@@ -18,10 +20,13 @@ def main(batch_size: int, image_shape: int, weights_path: str, data_path: str, m
                        classification_models.tfkeras.Classifiers.models_names()
     :param verbose: verbosity level
     """
+    run = wandb.init(project="wandb-demo", entity="shershebnev", tags=["evaluation"])
+    run.use_artifact('shershebnev/wandb-demo/data:v0', type='data')
     test_ds = get_dataset(os.path.join(data_path, "test"), batch_size, image_shape, model_type=model_type,
                           shuffle=False, apply_aug=False)
     model = load_model(weights_path)
-    model.evaluate(test_ds, verbose=verbose)
+    model.evaluate(test_ds, verbose=verbose, callbacks=[WandbCallback()])
+    run.finish()
 
 
 if __name__ == "__main__":

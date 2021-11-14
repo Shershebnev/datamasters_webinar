@@ -1,7 +1,9 @@
 import os
 from argparse import ArgumentParser
 
+import wandb
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint  # pylint: disable=E0611
+from wandb.keras import WandbCallback
 
 from config import AVAILABLE_MODELS, NUM_CLASSES
 from utils import get_dataset, get_model
@@ -18,14 +20,23 @@ def main(batch_size: int, image_shape: int, model_type: str, epochs: int, data_p
     :param data_path: path to data
     :param verbose: verbosity level
     """
+    run = wandb.init(project="wandb-demo", entity="shershebnev", tags=["training"])
+    run.use_artifact('shershebnev/wandb-demo/data:v0', type='data')
+    cfg = wandb.config
+    cfg.update({"epochs": epochs, "batch_size": batch_size, "model_type": model_type, "image_shape": image_shape,
+                "data_path": data_path})
     train_ds = get_dataset(os.path.join(data_path, "train"), batch_size, image_shape, model_type)
     val_ds = get_dataset(os.path.join(data_path, "val"), batch_size, image_shape, model_type, apply_aug=False)
 
     callbacks = [ModelCheckpoint(f"{model_type}.h5", monitor="val_loss", save_best_only=True),
-                 EarlyStopping(monitor="val_loss", patience=7, verbose=verbose)]
+                 EarlyStopping(monitor="val_loss", patience=7, verbose=verbose), WandbCallback()]
     model = get_model(model_type, image_shape, NUM_CLASSES)
     model.compile(optimizer="SGD", loss="categorical_crossentropy", metrics=["accuracy"])
     model.fit(train_ds, epochs=epochs, validation_data=val_ds, callbacks=callbacks, verbose=verbose)
+    model_data = wandb.Artifact("model", type="model")
+    model_data.add_file(f"{model_type}.h5")
+    run.log_artifact(model_data)
+    run.finish()
 
 
 if __name__ == "__main__":

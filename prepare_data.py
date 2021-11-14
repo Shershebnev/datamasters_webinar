@@ -3,6 +3,7 @@ import shutil
 from argparse import ArgumentParser
 from typing import List, Tuple
 
+import wandb
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
@@ -86,6 +87,10 @@ def main(data_path: str, verbose: int) -> None:
     :param data_path: path to original data
     :param verbose: show tqdm progress bar
     """
+    run = wandb.init(project="wandb-demo", entity="shershebnev", tags=["data_preparation"])
+    raw_data = wandb.Artifact("raw_data", type="raw_data")
+    raw_data.add_dir(data_path)
+    run.log_artifact(raw_data)
     paths, class_labels = get_paths(data_path)
     train_paths, val_paths, test_paths = split(paths, class_labels)
 
@@ -94,6 +99,11 @@ def main(data_path: str, verbose: int) -> None:
             os.makedirs(os.path.join(data_path, dataset_name, label), exist_ok=True)
     for ds_paths, dataset_name in zip([train_paths, val_paths, test_paths], ["train", "val", "test"]):
         copy_files(data_path, ds_paths, dataset_name, verbose != 0)
+    data = wandb.Artifact("data", type="data")
+    for dataset_name in ["train", "val", "test"]:
+        data.add_dir(os.path.join(data_path, dataset_name))
+    run.log_artifact(data)
+    run.finish()
 
 
 if __name__ == "__main__":
