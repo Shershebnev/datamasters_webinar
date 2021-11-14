@@ -129,3 +129,31 @@ After setting up mlflow tracking in the code we can run the training script as
 `MLFLOW_S3_ENDPOINT_URL=http://127.0.0.1:9000 AWS_ACCESS_KEY_ID=admin AWS_SECRET_ACCESS_KEY=password python3 train.py --batch_size 128 --image_shape 224 --model_type resnet18 --epochs 2 --data_path data/ --verbose 1`
 
 Apart from metrics MLFlow also stores artifacts like model files which can then be put into MLFlow Registry.
+
+## 1.2 Wandb
+Available in the branch [wandb](https://github.com/Shershebnev/datamasters_webinar/tree/wandb). Installation is again through pip - `pip install wandb`.
+You'd also need to register at [their website](https://wandb.ai/site). It can be used for free (through personal license) but there are also several pricing options available
+and an option for self-hosting.  
+For free tier version you don't need to set up anything else like we did from MLFlow and DVC above (but you are also limited in terms of space)
+so that's pretty much all you need to do before you can use it.  
+Syntax for experiment tracking is pretty similar to MLFlow and for some frameworks like Keras you can also use callback
+for automated logging. Wandb also automatically tracks all the information about the system and resource usage.
+For Keras the code is as easy as
+```python
+import wandb
+from wandb.keras import WandbCallback
+
+wandb.init(project="wandb-demo", entity="shershebnev", tags=["training"])
+...
+model.fit(..., callbacks=[WandbCallback()])
+```
+You can also use wandb for versioning of data or models like this:
+```python
+import wandb
+run = wandb.init(project="wandb-demo", entity="shershebnev", tags=["data_preparation"])
+raw_data = wandb.Artifact("raw_data", type="raw_data")
+raw_data.add_dir(data_path)
+run.log_artifact(raw_data)
+run.finish()
+```
+or through the command-line `wandb artifact put wandb-demo/data /PATH/TO/DATA`
