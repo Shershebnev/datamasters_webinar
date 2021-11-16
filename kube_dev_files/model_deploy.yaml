@@ -1,0 +1,19 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: resnet18
+  namespace: seldon-system
+spec:
+  name: default
+  predictors:
+  - graph:
+      implementation: TRITON_SERVER
+      logger:
+        mode: all
+      modelUri: s3:models/animal-model
+      envSecretRefName: seldon-rclone-secret
+      name: resnet18
+      type: MODEL
+    name: default
+    replicas: 1
+  protocol: kfserving

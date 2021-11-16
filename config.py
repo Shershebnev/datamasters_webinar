@@ -31,3 +31,5 @@ AUG = A.Compose([
     A.GaussNoise(p=0.2),
     A.RandomBrightnessContrast(p=0.3)
 ])
+
+MODEL_DIR = "models"

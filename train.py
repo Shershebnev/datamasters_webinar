@@ -5,8 +5,8 @@ import wandb
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint  # pylint: disable=E0611
 from wandb.keras import WandbCallback
 
-from config import AVAILABLE_MODELS, NUM_CLASSES
-from utils import get_dataset, get_model
+from config import AVAILABLE_MODELS, MODEL_DIR, NUM_CLASSES
+from utils import get_dataset, get_latest_version, get_model
 
 
 def main(batch_size: int, image_shape: int, model_type: str, epochs: int, data_path: str, verbose: int) -> None:
@@ -28,13 +28,15 @@ def main(batch_size: int, image_shape: int, model_type: str, epochs: int, data_p
     train_ds = get_dataset(os.path.join(data_path, "train"), batch_size, image_shape, model_type)
     val_ds = get_dataset(os.path.join(data_path, "val"), batch_size, image_shape, model_type, apply_aug=False)
 
-    callbacks = [ModelCheckpoint(f"{model_type}.h5", monitor="val_loss", save_best_only=True),
+    model_latest_version = get_latest_version(model_type)
+    callbacks = [ModelCheckpoint(f"{MODEL_DIR}/{model_type}/{model_latest_version + 1}", monitor="val_loss",
+                                 save_best_only=True),
                  EarlyStopping(monitor="val_loss", patience=7, verbose=verbose), WandbCallback()]
     model = get_model(model_type, image_shape, NUM_CLASSES)
     model.compile(optimizer="SGD", loss="categorical_crossentropy", metrics=["accuracy"])
     model.fit(train_ds, epochs=epochs, validation_data=val_ds, callbacks=callbacks, verbose=verbose)
     model_data = wandb.Artifact("model", type="model")
-    model_data.add_file(f"{model_type}.h5")
+    model_data.add_dir(f"{MODEL_DIR}/{model_type}/{model_latest_version + 1}")
     run.log_artifact(model_data)
     run.finish()
 

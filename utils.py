@@ -13,7 +13,20 @@ from tensorflow.keras.preprocessing import image_dataset_from_directory  # pylin
 from tensorflow.python.keras.engine.functional import Functional  # typing  # pylint: disable=E0611
 from tensorflow.python.data.ops.dataset_ops import BatchDataset  # typing  # pylint: disable=E0611
 
-from config import AUG, SEED
+from config import AUG, MODEL_DIR, SEED
+
+
+def get_latest_version(model_type: str) -> int:
+    """Get latest model version from model dir for specified model type. In real life this should consult some remote
+    storage like S3 (directly or through, e.g. wandb), not local directory. But good enough for the demo purposes :)
+
+    :param model_type: model type
+    :return: next model version
+    """
+    versions = os.listdir(f"{MODEL_DIR}/{model_type}")
+    if not versions:  # no model of model_type logged
+        return 0
+    return int(sorted(versions, key=lambda x: int(x))[-1])
 
 
 def get_model(model_type: str, image_shape: int, num_classes: int) -> Functional:
