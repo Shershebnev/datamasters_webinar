@@ -63,3 +63,15 @@ kubectl apply -f kube_dev_files/model_deploy.yaml
 kubectl port-forward $(kubectl get pods -n seldon-system -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon-system 8003:8080
 
 curl -s http://localhost:8003/seldon/seldon-system/$MODEL_NAME/v2/models/$MODEL_NAME | jq .
+
+
+# Monitoring
+helm install seldon-core-analytics seldon-core-analytics \
+   --repo https://storage.googleapis.com/seldon-charts \
+   --namespace seldon-system
+kubectl rollout status deploy/seldon-core-analytics-grafana -n seldon-system
+
+# run port-forwarding in separate window
+kubectl port-forward svc/seldon-core-analytics-grafana 3000:80 -n seldon-system
+
+# web browser: http://localhost:3000

@@ -1,4 +1,5 @@
 import glob
+import random
 import requests
 
 import cv2
@@ -31,17 +32,19 @@ def predict(data):
 
 # read files and prepare batch
 files = glob.glob("data/test/*/*JPG")
-SUBSET_SIZE = min(len(files), 5)
-test_subset = files[:SUBSET_SIZE]
-payload = np.zeros((SUBSET_SIZE, 224, 224, 3))
-preprocess_input = Classifiers.get("resnet18")[1]
-for idx, file in tqdm(enumerate(test_subset), total=SUBSET_SIZE):
-    img = cv2.cvtColor(cv2.imread(file), cv2.COLOR_BGR2RGB)
-    img = preprocess_input(cv2.resize(img, (224, 224)))
-    payload[idx] = img
+for _ in tqdm(range(100), total=100, desc="Batch"):
+    random.shuffle(files)
+    SUBSET_SIZE = 5
+    test_subset = files[:SUBSET_SIZE]
+    payload = np.zeros((SUBSET_SIZE, 224, 224, 3))
+    preprocess_input = Classifiers.get("resnet18")[1]
+    for idx, file in enumerate(test_subset):
+        img = cv2.cvtColor(cv2.imread(file), cv2.COLOR_BGR2RGB)
+        img = preprocess_input(cv2.resize(img, (224, 224)))
+        payload[idx] = img
 
-# predictions from the deployed model
-predictions_np = predict(payload)
+    # predictions from the deployed model
+    predictions_np = predict(payload)
 
 # predictions from same model stored locally
 model = load_model("models/resnet18/1/model.savedmodel")
