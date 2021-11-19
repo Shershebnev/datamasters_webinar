@@ -1,0 +1,6 @@
+data
+.dvc
+kube*
+minio_data
+mlflow_data
+

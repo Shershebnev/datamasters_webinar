@@ -1,0 +1,45 @@
+version: "3.5"
+
+services:
+  flask-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    hostname: flask-api
+    ports:
+      - "5000:5000"
+    networks:
+      - flask
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    hostname: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - flask
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    hostname: grafana
+    user: "472"
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - ./monitoring/datasource.yml:/etc/grafana/provisioning/datasource.yml
+    env_file:
+      - ./monitoring/config.monitoring
+    networks:
+      - flask
+
+networks:
+  flask:

@@ -1,0 +1,2 @@
+MODEL_PATH = "resnet18.h5"
+IMAGE_SHAPE = 224
