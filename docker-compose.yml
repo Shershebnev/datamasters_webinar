@@ -7,8 +7,19 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     hostname: flask-api
+    depends_on:
+      - rabbit
     ports:
       - "5000:5000"
+    networks:
+      - flask
+
+  drift:
+    build:
+      context: .
+      dockerfile: Dockerfile_drift
+    restart: unless-stopped
+    hostname: drift
     networks:
       - flask
 
@@ -38,6 +49,16 @@ services:
       - ./monitoring/datasource.yml:/etc/grafana/provisioning/datasource.yml
     env_file:
       - ./monitoring/config.monitoring
+    networks:
+      - flask
+
+  rabbit:
+    image: rabbitmq:3.9-management
+    restart: unless-stopped
+    hostname: rabbit
+    ports:
+      - 5672:5672
+      - 15672:15672
     networks:
       - flask
 

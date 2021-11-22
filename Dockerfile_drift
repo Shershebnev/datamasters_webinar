@@ -1,0 +1,7 @@
+FROM nvcr.io/nvidia/tensorflow:21.02-tf2-py3
+RUN apt-get update && apt-get install -y python3-opencv
+COPY requirements_drift.txt /opt
+RUN pip3 install -r /opt/requirements_drift.txt
+COPY . /opt
+WORKDIR /opt
+CMD python3 drift_app/drift_detection.py

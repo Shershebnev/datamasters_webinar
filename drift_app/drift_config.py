@@ -1,4 +1,4 @@
-MODEL_PATH = "resnet18.h5"
+TEST_SIZE = 95
 IMAGE_SHAPE = 224
 
 RABBIT_HOST_NAME = "rabbit"
