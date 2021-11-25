@@ -38,7 +38,7 @@ helm install ambassador datawire/ambassador \
 kubectl rollout status deploy/ambassador -n seldon-system
 
 kubectl create ns minio
-helm repo add minio https://helm.min.io/
+helm repo add minio https://charts.min.io/
 helm install minio minio/minio \
     --set accessKey=admin \
     --set secretKey=password \
