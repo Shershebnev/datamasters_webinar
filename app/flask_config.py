@@ -1,4 +1,4 @@
-MODEL_PATH = "resnet18.h5"
+MODEL_PATH = "models/classifier/model.h5"
 IMAGE_SHAPE = 224
 
 RABBIT_HOST_NAME = "rabbit"

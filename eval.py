@@ -1,3 +1,4 @@
+import json
 import os
 from argparse import ArgumentParser
 
@@ -25,7 +26,8 @@ def main(batch_size: int, image_shape: int, weights_path: str, data_path: str, m
     test_ds = get_dataset(os.path.join(data_path, "test"), batch_size, image_shape, model_type=model_type,
                           shuffle=False, apply_aug=False)
     model = load_model(weights_path)
-    model.evaluate(test_ds, verbose=verbose, callbacks=[WandbCallback()])
+    metrics = model.evaluate(test_ds, verbose=verbose, return_dict=True, callbacks=[WandbCallback()])
+    json.dump(metrics, open(f"metrics_{model_type}.json", "w"))
     run.finish()
 
 
